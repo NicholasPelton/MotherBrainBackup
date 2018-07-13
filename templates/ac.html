@@ -1,0 +1,223 @@
+<html>
+<head>
+<script type="text/javascript" charset="utf-8">
+  $(document).ready(function(){
+    var socket = io.connect();
+    socket.on('connect', function() {
+      socket.emit('connected', "ac");
+    });
+//------------------set up click functions, double the paths because of mobile design---------------------
+    $('#day_high_m').change(function() {
+      socket.emit('climate_2', $('#day_high_m').val(),"day_high",{{outlet.num}});
+    });
+    $('#day_high').change(function() {
+      socket.emit('climate_2', $('#day_high').val(),"day_high",{{outlet.num}});
+    });
+    $('#day_low_m').change(function() {
+      socket.emit('climate_2', $('#day_low_m').val(),"day_low",{{outlet.num}});
+    });
+    $('#day_low').change(function() {
+      socket.emit('climate_2', $('#day_low').val(),"day_low",{{outlet.num}});
+    });
+    $('#night_high_m').change(function() {
+      socket.emit('climate_2', $('#night_high_m').val(),"night_high",{{outlet.num}});
+    });
+    $('#night_high').change(function() {
+      socket.emit('climate_2', $('#night_high').val(),"night_high",{{outlet.num}});
+    });
+    $('#night_low_m').change(function() {
+      socket.emit('climate_2', $('#night_low_m').val(),"night_low",{{outlet.num}});
+    });
+    $('#night_low').change(function() {
+      socket.emit('climate_2', $('#night_low').val(),"night_low",{{outlet.num}});
+    });
+    $('#daytime').click(function() {
+      if (this.checked){
+        $('#day_low').attr("disabled",false);
+        $('#day_high').attr("disabled",false);
+        $('#day_low_m').attr("disabled",false);
+        $('#day_high_m').attr("disabled",false);
+        socket.emit('climate_2', "checked","day_t",{{outlet.num}});
+      } else {
+        $('#day_low').attr("disabled",true);
+        $('#day_high').attr("disabled",true);
+        $('#day_low_m').attr("disabled",true);
+        $('#day_high_m').attr("disabled",true);
+        socket.emit('climate_2', "notchecked","day_t",{{outlet.num}});
+      }
+    });
+
+    $('#nighttime').click(function() {
+      if (this.checked){
+        $('#night_low').attr("disabled",false);
+        $('#night_high').attr("disabled",false);
+        $('#night_low_m').attr("disabled",false);
+        $('#night_high_m').attr("disabled",false);
+        socket.emit('climate_2', "checked","night_t",{{outlet.num}});
+      } else {
+        $('#night_low').attr("disabled",true);
+        $('#night_high').attr("disabled",true);
+        $('#night_low_m').attr("disabled",true);
+        $('#night_high_m').attr("disabled",true);
+        socket.emit('climate_2', "notchecked","night_t",{{outlet.num}});
+      }
+    });
+//---------------------Make sure values respond to eachother---------------
+    socket.on('day_high', function(msg) {
+      $('#day_high').val(msg);
+      $('#day_high_m').val(msg);
+    });
+    socket.on('day_low', function(msg) {
+      $('#day_low').val(msg);
+      $('#day_low_m').val(msg);
+    });
+    socket.on('night_high', function(msg) {
+      $('#night_high').val(msg);
+      $('#night_high_m').val(msg);
+    });
+    socket.on('night_low', function(msg) {
+      $('#night_low').val(msg);
+      $('#night_low_m').val(msg);
+    });
+    socket.on('{{outlet.num}}day_t', function(msg) {
+      if (msg=="checked"){
+        $('#daytime').attr("checked",true);
+        $('#day_low').attr("disabled",false);
+        $('#day_high').attr("disabled",false);
+        $('#day_low_m').attr("disabled",false);
+        $('#day_high_m').attr("disabled",false);
+      }else{
+        $('#daytime').attr("checked",false);
+        $('#day_low').attr("disabled",true);
+        $('#day_high').attr("disabled",true);
+        $('#day_low_m').attr("disabled",true);
+        $('#day_high_m').attr("disabled",true);
+      }
+    });
+    socket.on('{{outlet.num}}night_t', function(msg) {
+      if (msg=="checked"){
+        $('#nighttime').attr("checked",true);
+        $('#night_low').attr("disabled",false);
+        $('#night_high').attr("disabled",false);
+        $('#night_low_m').attr("disabled",false);
+        $('#night_high_m').attr("disabled",false);
+      }else{
+        $('#nighttime').attr("checked",false);
+        $('#night_low').attr("disabled",true);
+        $('#night_high').attr("disabled",true);
+        $('#night_low_m').attr("disabled",true);
+        $('#night_high_m').attr("disabled",true);
+      }
+    });
+
+  });
+</script>
+</head>
+
+<body>
+Set the acceptable temperature range. If the temperature gets too high, the outlet will kick
+in until the temperature becomes too low.
+<br><br>
+<div class="row">
+  <div class="col-6">       
+    <h5 align="center">
+      <input class="form-check-input" type="checkbox" id="daytime" {{outlet.day_t}}>Day Time:
+    </h5>
+    <div class="pckiller">    
+      <h5>
+      <div class="row">
+        <div class="col-5 pr-0 pl-0 pt-1" align="right">
+          High:
+        </div>
+        <div class="col-7 pr-0 pl-0" align="left">
+          <input value={{outlet.d_t_high}} {% if outlet.day_t == "notchecked" %}disabled{% endif %}
+                        id="day_high_m" style="border-color:black;" 
+                        type="number" pattern="[0-9]*" min="30" max="110">
+          &deg;F
+          <br>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-5 pr-0 pl-0 pt-1" align="right">
+          Low:
+        </div>
+        <div class="col-7 pl-0 pr-0" align="left">
+          <input value={{outlet.d_t_low}} {% if outlet.day_t == "notchecked" %}disabled{% endif %}
+                        id="day_low_m" style="border-color:black;" 
+                        type="number" pattern="[0-9]*" min="30" max="110">
+          &deg;F
+          <br>
+        </div>
+      </div>
+      </h5>
+    </div>
+    <div class="mobilekiller">  
+      <h5 align="center">
+        Low:<input class="btn bbtn btn-outline-light" value={{outlet.d_t_low}}
+                      {% if outlet.day_t == "notchecked" %}disabled{% endif %} 
+                      id="day_low" style="border-color:black;"
+                      type="number" pattern="[0-9]*" min="30" max="110">&deg;F &nbsp; - &nbsp; 
+        High:<input class="btn bbtn btn-outline-light" value={{outlet.d_t_high}}
+                      {% if outlet.day_t == "notchecked" %}disabled{% endif %} 
+                      id="day_high" style="border-color:black;" 
+                      type="number" pattern="[0-9]*" min="30" max="110">&deg;F
+      </h5>
+    </div>
+  </div>
+
+
+  <div class="col-6"> 
+    <h5 align="center">
+      <input class="form-check-input" type="checkbox" id="nighttime" {{outlet.night_t}}>Night Time:
+    </h5>
+    <div class="pckiller">    
+      <h5>
+      <div class="row">
+        <div class="col-4 pr-0 pl-0 pt-1" align="right">
+          High:
+        </div>
+        <div class="col-8 pr-0 pl-0" align="left">
+          <input value={{outlet.n_t_high}} {% if outlet.night_t == "notchecked" %}disabled{% endif %}
+                        id="night_high_m" style="border-color:black;" 
+                        type="number" pattern="[0-9]*" min="30" max="110">
+          &deg;F
+          <br>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4 pr-0 pl-0 pt-1" align="right">
+          Low:
+        </div>
+        <div class="col-8 pl-0 pr-0" align="left">
+          <input value={{outlet.n_t_low}} {% if outlet.night_t == "notchecked" %}disabled{% endif %}
+                        id="night_low_m" style="border-color:black;" 
+                        type="number" pattern="[0-9]*" min="30" max="110">
+          &deg;F
+          <br>
+        </div>
+      </div>
+      </h5>
+    </div>
+    <div class="mobilekiller">  
+      <h5 align="center">
+        Low:<input class="btn bbtn btn-outline-light" value={{outlet.n_t_low}}
+                      {% if outlet.night_t == "notchecked" %}disabled{% endif %} 
+                      id="night_low" style="border-color:black;" 
+                      type="number" pattern="[0-9]*" min="30" max="110">&deg;F &nbsp; - &nbsp;
+        High:<input class="btn bbtn btn-outline-light" value={{outlet.n_t_high}}
+                      {% if outlet.night_t == "notchecked" %}disabled{% endif %} 
+                      id="night_high" style="border-color:black;" 
+                      type="number" pattern="[0-9]*" min="30" max="110">&deg;F
+      </h5>
+    </div>
+  </div>
+</div>
+<br><small>
+Any device, fans included, that can cool the garden. This is especially important in very 
+hot environments or if a lot of supplimental lights are being used.
+Usually this is not needed in conjunction with a heating device unless there are massive 
+swings in temperature between the day time and night time. If needed, make sure to use the 
+day time and night time settings so that both machines aren't running at the same 
+time!</small>
+</body>
+</html>

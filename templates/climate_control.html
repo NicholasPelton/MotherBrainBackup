@@ -1,0 +1,59 @@
+
+<html>
+<head>
+<script type="text/javascript" charset="utf-8">
+  $(document).ready(function(){
+    $('#climatebody').load("{{outlet.c_style}}");    
+    var socket = io.connect();
+    socket.on('connect', function() {
+      socket.emit('connected', "climate_control");
+    });
+
+
+    $('.dropper2').bind('click', function() {
+      var style = $(this).val();
+      var texto = $(this).text();
+      $("#climate_style").text(texto);
+      $('#climatebody').empty();
+      $('#climatebody').load(style);
+      socket.emit('climate_u', style, {{outlet.num}});
+      $("#climate_style").dropdown('toggle');
+      return false;
+    });
+
+    socket.on('{{outlet.num}}climate_template', function(msg) {
+      $('#climatebody').empty();
+      $('#climatebody').load(msg);
+    });
+
+
+    socket.on('{{outlet.num}}climate_name', function(msg) {
+      $("#climate_style").text(msg);
+    });
+
+  });
+</script>
+</head>
+<body>
+    <h5 align="center">
+
+      <div class="btn-group dropdown">
+        <button class="btn btn-light btn-lg dropdown-toggle" id="climate_style" type = "button" 
+                       data-toggle="dropdown" aria-haspopup="true" aira-expanded="false" style="border-color:black;">          
+        {% if outlet.c_style == "/ac" %}A/C
+	{% elif outlet.c_style == "/heater" %}Heater
+	{% elif outlet.c_style == "/humidifier" %}Humidifier
+	{% elif outlet.c_style == "/deHumidifier" %}De-Humidifier
+	{% endif %}	  
+        </button>
+        <div class="dropdown-menu" aria-labelledby="climate_style">
+          <button class="dropdown-item dropper2 btn-lg" value="/ac" type="button">A/C</button>
+          <button class="dropdown-item dropper2 btn-lg" value="/heater" type="button">Heater</button>
+          <button class="dropdown-item dropper2 btn-lg" value="/humidifier" type="button">Humidifier</button>
+          <button class="dropdown-item dropper2 btn-lg" value="/deHumidifier" type="button">De-Humidifier</button>        
+        </div>
+      </div>    
+    </h5>
+    <div id="climatebody"></div>
+</body>
+</html>
